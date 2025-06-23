@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Infrastructure Game</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      min-width: 100vw;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #159A48;
+      background: linear-gradient(135deg, #FFC907 0%, #8BD1CB 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #game {
+      display: block;
+      margin: 0 auto;
+      border: 4px solid #2E9DF7;
+      background: #fff;
+      border-radius: 12px;
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      max-height: 100vh;
+      min-width: 0;
+      min-height: 0;
+      box-sizing: border-box;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 1;
+    }
+    #overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #instructions {
+      background: rgba(255,255,255,0.95);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #8BD1CB44;
+      padding: 1rem 1rem 0.8rem 1rem; /* Smaller padding */
+      max-width: 300px; /* Smaller max width */
+      text-align: center;
+      font-size: 1rem; /* Smaller font size */
+      color: #159A48;
+      margin-bottom: 1rem;
+      pointer-events: auto;
+    }
+    .difficulty-btn, #startBtn {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 1rem 0;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #2E9DF7 60%, #FFC907 100%);
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 2px 8px #2E9DF744;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      pointer-events: auto;
+    }
+    .difficulty-btn:hover, #startBtn:hover {
+      background: linear-gradient(90deg, #FFC907 60%, #2E9DF7 100%);
+      color: #159A48;
+    }
+    #game-over {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #8BD1CB 44;
+      padding: 2rem 2rem 1.5rem 2rem;
+      color: #159A48;
+      font-size: 1.3rem;
+      text-align: center;
+      z-index: 10;
+      min-width: 300px;
+      max-width: 90vw;
+      pointer-events: auto;
+    }
+    #game-over button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 1rem 0;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #2E9DF7 60%, #FFC907 100%);
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 2px 8px #2E9DF744;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    #game-over button:hover {
+      background: linear-gradient(90deg, #FFC907 60%, #2E9DF7 100%);
+      color: #159A48;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="800" height="800"></canvas>
+  <div id="overlay">
+    <div id="instructions">
+      <!-- Jerrycan image above the title -->
+      <img src="/workspaces/05-charity-water-game-prototype/charity-water-jerrycan.png" alt="Jerrycan" style="width:48px;height:60px;display:block;margin:0 auto 0.5rem auto;">
+      <strong>Water Infrastructure Game</strong><br><br>
+      Guide the pipe to collect water droplets!<br>
+      Use arrow keys to move.<br>
+      Don't crash into yourself or the wall!<br><br>
+      <span>Collect <span style="color:#2E9DF7;">blue</span> and <span style="color:#FFC907;">gold</span> water drops.<br>
+      <span style="color:#bbb;">Avoid dirty water (light gray) drops!</span></span><br><br>
+      <span>Select Difficulty:</span><br>
+      <button class="difficulty-btn" onclick="startGame('easy')">Easy</button>
+      <button class="difficulty-btn" onclick="startGame('medium')">Medium</button>
+      <button class="difficulty-btn" onclick="startGame('hard')">Hard</button>
+      <button id="startBtn" onclick="startGame()">Start Game</button>
+    </div>
+    <div id="game-over">
+      <h2>Game Over</h2>
+      <p>Your Score: <span id="final-score">0</span></p>
+      <p>High Score: <span id="high-score">0</span></p>
+      <button onclick="restartGame()">Play Again</button>
+      <!-- Learn more button with jerrycan image -->
+      <button onclick="window.open('https://www.charitywater.org/donate','_blank')" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+        <img src="/workspaces/05-charity-water-game-prototype/charity-water-jerrycan.png" alt="Jerrycan" style="width:22px;height:28px;vertical-align:middle;"> Learn About charity: water
+      </button>
+    </div>
+  </div>
+  <!-- Preload the charity: water jerrycan image for golden droplets -->
+  <img id="goldenJerrycan" src="/workspaces/05-charity-water-game-prototype/charity-water-jerrycan.png" style="display:none;" alt="Golden Jerrycan">
+  <script>
+    // Hide overlay and show game when game starts
+    const overlay = document.getElementById('overlay');
+    const instructions = document.getElementById('instructions');
+    const gameOverScreen = document.getElementById('game-over');
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const finalScoreEl = document.getElementById('final-score');
+    const highScoreEl = document.getElementById('high-score');
+    let score = 0;
+    let highScore = 0;
+    // Update instructions to mention dirty and gold water
+    document.getElementById('instructions').innerHTML = `
+      <strong>Water Infrastructure Game</strong><br><br>
+      Guide the pipe to collect water droplets!<br>
+      Use arrow keys to move.<br>
+      Don't crash into yourself or the wall!<br><br>
+      <span>Collect <span style="color:#2E9DF7;">blue</span> and <span style="color:#FFC907;">gold</span> water drops.<br>
+      <span style="color:#bbb;">Avoid dirty water (light gray) drops!</span></span><br><br>
+      <span>Select Difficulty:</span><br>
+      <button class="difficulty-btn" onclick="startGame('easy')">Easy</button>
+      <button class="difficulty-btn" onclick="startGame('medium')">Medium</button>
+      <button class="difficulty-btn" onclick="startGame('hard')">Hard</button>
+      <button id="startBtn" onclick="startGame()">Start Game</button>
+    `;
+
+    // Set the number of tiles in the grid to 16 for a smaller grid
+    const tileCount = 20;
+    let gridSize = canvas.width / tileCount;
+
+    // Use arrays for multiple droplets
+    let snake, direction, droplets, bonusDroplets, dirtyDroplets, intervalId;
+    const maxDroplets = 12;
+    function getRandomPosition() {
+      return {
+        x: Math.floor(Math.random() * tileCount),
+        y: Math.floor(Math.random() * tileCount)
+      };
+    }
+    // Helper to check if a position is occupied
+    function isOccupied(x, y) {
+      return snake.some(seg => seg.x === x && seg.y === y) ||
+        droplets.some(d => d.x === x && d.y === y) ||
+        bonusDroplets.some(d => d.x === x && d.y === y) ||
+        dirtyDroplets.some(d => d.x === x && d.y === y);
+    }
+    function drawTile(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
+    }
+    // Helper function to draw a water drop shape at a grid position
+    function drawWaterDrop(x, y, color) {
+      ctx.save();
+      ctx.translate(x * gridSize + gridSize / 2, y * gridSize + gridSize / 2);
+      ctx.scale(gridSize / 20, gridSize / 20); // Scale to fit tile
+      ctx.beginPath();
+      // Draw a simple water drop shape
+      ctx.moveTo(0, -8); // Top point
+      ctx.bezierCurveTo(6, -2, 8, 6, 0, 10); // Right curve
+      ctx.bezierCurveTo(-8, 6, -6, -2, 0, -8); // Left curve
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+    function draw() {
+      ctx.fillStyle = '#000'; // Black background
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Draw all blue droplets
+      droplets.forEach(d => drawWaterDrop(d.x, d.y, '#2E9DF7'));
+      // Draw all gold droplets as jerrycan image (with fallback if not loaded)
+      const jerrycanImg = document.getElementById('goldenJerrycan');
+      bonusDroplets.forEach(d => {
+        // Only draw the image if it's loaded, otherwise draw a gold circle
+        if (jerrycanImg.complete && jerrycanImg.naturalWidth > 0) {
+          ctx.drawImage(
+            jerrycanImg,
+            d.x * gridSize + gridSize * 0.1,
+            d.y * gridSize + gridSize * 0.1,
+            gridSize * 0.8,
+            gridSize * 0.8
+          );
+        } else {
+          // Fallback: draw a gold circle if image not loaded yet
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(d.x * gridSize + gridSize / 2, d.y * gridSize + gridSize / 2, gridSize * 0.35, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFC907';
+          ctx.fill();
+          ctx.restore();
+        }
+      });
+      // Draw all dirty droplets (light gray)
+      dirtyDroplets.forEach(d => drawWaterDrop(d.x, d.y, '#bbb'));
+      // Draw snake (head green, body gold)
+      snake.forEach((segment, i) => {
+        const color = i === 0 ? '#4FCB53' : '#FFC907';
+        drawTile(segment.x, segment.y, color);
+      });
+    }
+    function update() {
+      const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+      if (
+        head.x < 0 || head.y < 0 ||
+        head.x >= tileCount || head.y >= tileCount ||
+        snake.some(seg => seg.x === head.x && seg.y === head.y)
+      ) {
+        clearInterval(intervalId);
+        finalScoreEl.textContent = score;
+        highScore = Math.max(score, highScore);
+        highScoreEl.textContent = highScore;
+        gameOverScreen.style.display = 'block';
+        instructions.style.display = 'none';
+        overlay.style.pointerEvents = 'auto';
+        return;
+      }
+      snake.unshift(head);
+      // Check for blue droplet
+      let collected = false;
+      for (let i = 0; i < droplets.length; i++) {
+        if (head.x === droplets[i].x && head.y === droplets[i].y) {
+          score++;
+          droplets.splice(i, 1);
+          collected = true;
+          break;
+        }
+      }
+      // Check for gold droplet
+      for (let i = 0; i < bonusDroplets.length; i++) {
+        if (head.x === bonusDroplets[i].x && head.y === bonusDroplets[i].y) {
+          score += 5;
+          bonusDroplets.splice(i, 1);
+          for (let j = 0; j < 5; j++) snake.push({ ...snake[snake.length - 1] });
+          collected = true;
+          break;
+        }
+      }
+      // Check for dirty droplet
+      for (let i = 0; i < dirtyDroplets.length; i++) {
+        if (head.x === dirtyDroplets[i].x && head.y === dirtyDroplets[i].y) {
+          score = Math.max(0, score - 5);
+          dirtyDroplets.splice(i, 1);
+          collected = true;
+          break;
+        }
+      }
+      if (collected) {
+        // Show confetti if score reaches 400
+        if (score === 400) {
+          showConfetti();
+        }
+        // Add new droplets if under max
+        while (droplets.length + bonusDroplets.length + dirtyDroplets.length < maxDroplets) {
+          const rand = Math.random();
+          let pos;
+          do {
+            pos = getRandomPosition();
+          } while (isOccupied(pos.x, pos.y));
+          if (rand < 0.1) {
+            bonusDroplets.push(pos);
+          } else if (rand < 0.2) {
+            dirtyDroplets.push(pos);
+          } else {
+            droplets.push(pos);
+          }
+        }
+      } else {
+        snake.pop();
+      }
+    }
+    function gameLoop() {
+      update();
+      draw();
+    }
+    function startGame(difficulty = 'medium') {
+      snake = [ { x: 10, y: 10 } ];
+      direction = { x: 0, y: 0 };
+      bonusDroplets = [];
+      dirtyDroplets = [];
+      droplets = [];
+      // Fill up to maxDroplets with blue droplets at start
+      while (droplets.length < maxDroplets) {
+        let pos;
+        do {
+          pos = getRandomPosition();
+        } while (droplets.some(d => d.x === pos.x && d.y === pos.y));
+        droplets.push(pos);
+      }
+      score = 0;
+      instructions.style.display = 'none';
+      gameOverScreen.style.display = 'none';
+      overlay.style.pointerEvents = 'none';
+      canvas.style.display = 'block';
+      let speed;
+      switch (difficulty) {
+        case 'easy': speed = 300; break;
+        case 'hard': speed = 75; break;
+        default: speed = 150;
+      }
+      function startLoopOnKeyPress(e) {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+          window.removeEventListener('keydown', startLoopOnKeyPress);
+          intervalId = setInterval(gameLoop, speed);
+          switch (e.key) {
+            case 'ArrowUp': direction = { x: 0, y: -1 }; break;
+            case 'ArrowDown': direction = { x: 0, y: 1 }; break;
+            case 'ArrowLeft': direction = { x: -1, y: 0 }; break;
+            case 'ArrowRight': direction = { x: 1, y: 0 }; break;
+          }
+        }
+      }
+      window.addEventListener('keydown', startLoopOnKeyPress);
+    }
+    function restartGame() {
+      startGame();
+    }
+    window.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp': if (direction.y === 0) direction = { x: 0, y: -1 }; break;
+        case 'ArrowDown': if (direction.y === 0) direction = { x: 0, y: 1 }; break;
+        case 'ArrowLeft': if (direction.x === 0) direction = { x: -1, y: 0 }; break;
+        case 'ArrowRight': if (direction.x === 0) direction = { x: 1, y: 0 }; break;
+      }
+    });
+
+    // Update gridSize on resize so tiles stay square
+    function resizeCanvas() {
+      const size = Math.min(window.innerWidth, window.innerHeight);
+      canvas.width = size;
+      canvas.height = size;
+      gridSize = canvas.width / tileCount;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Confetti effect when score reaches 400
+    function showConfetti() {
+      // Create a container for confetti
+      const confettiContainer = document.createElement('div');
+      confettiContainer.style.position = 'fixed';
+      confettiContainer.style.left = '0';
+      confettiContainer.style.top = '0';
+      confettiContainer.style.width = '100vw';
+      confettiContainer.style.height = '100vh';
+      confettiContainer.style.pointerEvents = 'none';
+      confettiContainer.style.zIndex = '10000';
+      document.body.appendChild(confettiContainer);
+
+      // Colors for confetti (gold, blue, green, white)
+      const colors = ['#FFC907', '#2E9DF7', '#4FCB53', '#fff'];
+      const confettiCount = 60;
+      for (let i = 0; i < confettiCount; i++) {
+        const conf = document.createElement('div');
+        conf.style.position = 'absolute';
+        conf.style.width = '12px';
+        conf.style.height = '12px';
+        conf.style.borderRadius = '50%';
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.top = '-20px';
+        confettiContainer.appendChild(conf);
+        // Animate confetti falling
+        const duration = 1500 + Math.random() * 1000;
+        conf.animate([
+          { transform: `translateY(0)` },
+          { transform: `translateY(${window.innerHeight + 40}px)` }
+        ], {
+          duration: duration,
+          easing: 'ease-in',
+          fill: 'forwards'
+        });
+      }
+      // Remove confetti after 2 seconds
+      setTimeout(() => {
+        confettiContainer.remove();
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
