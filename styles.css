@@ -13,3 +13,249 @@ Secondary Colors:
 - Pink:       #F16061
 
 */
+
+/* Reset and base styles using charity: water fonts */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, #FFC907 0%, #8BD1CB 100%);
+  color: #159A48;
+  overflow: hidden;
+}
+
+/* Main container */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Game board - DOM grid instead of canvas */
+#game-board {
+  display: none;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(20, 1fr);
+  gap: 1px;
+  background: #000;
+  border: 4px solid #2E9DF7;
+  border-radius: 12px;
+  padding: 4px;
+  width: 400px;
+  height: 400px;
+  margin: 20px auto;
+}
+
+/* Individual grid cells */
+.grid-cell {
+  background: #000;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Snake parts */
+.snake-head {
+  background: #4FCB53;
+  border-radius: 3px;
+}
+
+.snake-body {
+  background: #FFC907;
+  border-radius: 3px;
+}
+
+/* Water droplets */
+.water-drop {
+  background: #2E9DF7;
+  border-radius: 50%;
+  width: 80%;
+  height: 80%;
+}
+
+.bonus-drop {
+  background: #FFC907;
+  border-radius: 50%;
+  width: 80%;
+  height: 80%;
+  border: 2px solid #FF902A;
+}
+
+.dirty-drop {
+  background: #bbb;
+  border-radius: 50%;
+  width: 80%;
+  height: 80%;
+}
+
+/* Wall obstacles */
+.wall {
+  background: #8B4513;
+  border: 1px solid #654321;
+}
+
+/* Intro screen */
+#intro-screen {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(139, 209, 203, 0.3);
+  padding: 1.5rem;
+  max-width: 350px;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: center;
+  color: #159A48;
+}
+
+#intro-screen h1 {
+  color: #2E9DF7;
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+#intro-screen p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 0.8rem;
+}
+
+/* Instructions box */
+.instructions-box {
+  margin: 0.8rem 0;
+  padding: 0.8rem;
+  background: rgba(46, 157, 247, 0.1);
+  border-radius: 8px;
+}
+
+.instructions-box p {
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+}
+
+/* Buttons with charity: water styling */
+.btn {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #2E9DF7 0%, #FFC907 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.btn:hover {
+  background: linear-gradient(90deg, #FFC907 0%, #2E9DF7 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 157, 247, 0.3);
+}
+
+/* Game over screen */
+#game-over-screen {
+  display: none;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(139, 209, 203, 0.3);
+  padding: 2rem;
+  max-width: 350px;
+  text-align: center;
+  color: #159A48;
+}
+
+#game-over-screen h2 {
+  color: #F5402C;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+/* Score display */
+#score-display {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1rem;
+  border-radius: 10px;
+  color: #159A48;
+  font-weight: bold;
+  font-size: 1.2rem;
+  display: none;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  #game-board {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .container {
+    padding: 10px;
+  }
+  
+  #intro-screen, #game-over-screen {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 1rem;
+  }
+  
+  #intro-screen h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  #intro-screen p {
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .instructions-box p {
+    font-size: 0.8rem;
+  }
+  
+  .btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+    margin: 0.3rem 0;
+  }
+}
+
+@media (max-height: 600px) {
+  #intro-screen {
+    padding: 1rem;
+    max-height: 85vh;
+  }
+  
+  #intro-screen h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  #intro-screen p {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .instructions-box {
+    margin: 0.5rem 0;
+    padding: 0.6rem;
+  }
+  
+  .btn {
+    padding: 0.7rem;
+    font-size: 0.95rem;
+    margin: 0.2rem 0;
+  }
+}
